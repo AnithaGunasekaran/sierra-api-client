@@ -1,0 +1,24 @@
+{
+  "name": "sierra-api-client",
+  "version": "1.0.0",
+  "description": "Sierra API client for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alivesay/sierra-api-client.git"
+  },
+  "author": "Andrew Livesay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alivesay/sierra-api-client/issues"
+  },
+  "homepage": "https://github.com/alivesay/sierra-api-client#readme",
+  "dependencies": {
+    "lodash": "^4.6.1",
+    "request": "^2.69.0",
+    "require-directory": "^2.1.1"
+  }
+}
