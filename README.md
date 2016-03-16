@@ -25,7 +25,7 @@ npm install sierra-api-client --save
   "secret": "<your_api_secret>"
 }
 ```
-    *  Note:  For improved security, you should generate your token once via `authenticate()` and store the token instead of key/secret.  For example:
+##### Note:  For improved security, you should generate your token once via `authenticate()` and store the token instead of key/secret.  For example:
 
 ```json
 {
