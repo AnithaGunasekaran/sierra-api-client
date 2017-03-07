@@ -8,12 +8,33 @@ function fetch(options, callback) {
     }, callback);
 }
 
-function fetchById(options, callback) {
+
+
+function queryPatrons(options, callback) {
+
     api.request({
-        method: 'GET',
-        resource: 'patrons/' + options.id,
-        params: options.params
+        method: 'POST',
+        resource: 'patrons/query',
+        params: options
     }, callback);
+}
+
+
+function fetchPatronByID(options, callback) {
+
+
+    api.requestPatron({
+        method: 'GET',  
+        params: options
+    }, function(err,result){
+        callback(null,result)
+    }); 
+
+    /*api.requestPatron({
+        method: 'GET',
+        resource: options.patronLink + "?" + options.fields,
+        params: options
+    }, callback);*/
 }
 
 function fetchByBarcode(options, callback) {
@@ -26,6 +47,7 @@ function fetchByBarcode(options, callback) {
 
 module.exports = {
     fetch: fetch,
-    fetchById: fetchById,
-    fetchByBarcode: fetchByBarcode
+    fetchPatronByID:fetchPatronByID,
+    fetchByBarcode: fetchByBarcode,
+    queryPatrons: queryPatrons
 };

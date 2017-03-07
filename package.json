@@ -1,24 +1,89 @@
 {
-  "name": "sierra-api-client",
-  "version": "1.0.1",
-  "description": "Sierra API client for Node.js",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_args": [
+    [
+      {
+        "raw": "sierra-api-client",
+        "scope": null,
+        "escapedName": "sierra-api-client",
+        "name": "sierra-api-client",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "C:\\WIP\\sierra-api"
+    ]
+  ],
+  "_from": "sierra-api-client@latest",
+  "_id": "sierra-api-client@1.0.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/sierra-api-client",
+  "_nodeVersion": "4.1.0",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/sierra-api-client-1.0.1.tgz_1458095256878_0.33719730749726295"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/alivesay/sierra-api-client.git"
+  "_npmUser": {
+    "name": "alivesay",
+    "email": "andrew.livesay@gmail.com"
   },
-  "author": "Andrew Livesay",
-  "license": "ISC",
+  "_npmVersion": "2.14.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "sierra-api-client",
+    "scope": null,
+    "escapedName": "sierra-api-client",
+    "name": "sierra-api-client",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/sierra-api-client/-/sierra-api-client-1.0.1.tgz",
+  "_shasum": "200cf110040c626eaba8a96531e097ef514913c6",
+  "_shrinkwrap": null,
+  "_spec": "sierra-api-client",
+  "_where": "C:\\WIP\\sierra-api",
+  "author": {
+    "name": "Andrew Livesay"
+  },
   "bugs": {
     "url": "https://github.com/alivesay/sierra-api-client/issues"
   },
-  "homepage": "https://github.com/alivesay/sierra-api-client#readme",
   "dependencies": {
     "lodash": "^4.6.1",
     "request": "^2.69.0",
     "require-directory": "^2.1.1"
-  }
+  },
+  "description": "Sierra API client for Node.js",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "200cf110040c626eaba8a96531e097ef514913c6",
+    "tarball": "https://registry.npmjs.org/sierra-api-client/-/sierra-api-client-1.0.1.tgz"
+  },
+  "gitHead": "0db760192bff2a59c41eda3362474e433d9ff172",
+  "homepage": "https://github.com/alivesay/sierra-api-client#readme",
+  "license": "ISC",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "alivesay",
+      "email": "andrew.livesay@gmail.com"
+    }
+  ],
+  "name": "sierra-api-client",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alivesay/sierra-api-client.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.1"
 }
