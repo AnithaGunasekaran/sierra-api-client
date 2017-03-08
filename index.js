@@ -3,6 +3,8 @@ var _ = require('lodash');
 var requireDirectory = require('require-directory');
 var async  = require("async");
 var winston = require('winston');
+var today = new Date();
+var currentDate = today.getDate()+'-'+ today.getMonth() +'-'+ today.getFullYear();
 
 const DEFAULT_SETTINGS = {
     urlBase: '/iii/sierra-api',
@@ -14,12 +16,14 @@ var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.File)({
       name: 'info-file',
-      filename: 'filelog-info.log',
+      filename: './logs/sierra-api-info-' + currentDate +".log",
+      timestamp: true,
       level: 'info'
     }),
     new (winston.transports.File)({
       name: 'error-file',
-      filename: 'filelog-error.log',
+      filename: './logs/sierra-api-error-' + currentDate + ".log",
+      timestamp: true,
       level: 'error'
     })
   ]
@@ -58,14 +62,21 @@ SierraAPI.prototype.authenticate = function authenticate (key, secret, callback)
 
     request(requestOptions, function (error, response, body) {
 		
-
+        
         if (error) {
+            logger.error(error);
+            return callback(error, null);
+        }
+
+        if (response == null){
+            logger.error(response);
+            error = "Response is empty";
             return callback(error, null);
         }
 
         var result;
 
-        logger.info("Response for ------------- "+requestOptions.url)
+        logger.info("Response for ------------- " + requestOptions.url)
         logger.info(response);
         logger.info("-------------")
         
@@ -81,24 +92,25 @@ SierraAPI.prototype.authenticate = function authenticate (key, secret, callback)
         }
         
         if (result['httpStatus']) {
+            logger.error(result);
             return callback(result, null);
         }
 
+        logger.error('Request failed with: ' + response);
         return callback('Request failed with: ' + response.statusCode, null);
     });
 };
 
 SierraAPI.prototype.request = function _request (options, callback) {
+
     var self = this;
 
     if (!self.settings.token) {
         return callback('No token defined! Call authenticate() first.', null);
     }
-
- 
  
     var requestOptions = {
-        url: self._buildURL(options.resource) + "?limit=9999&offset=0",
+        url: self._buildURL(options.resource) + "?limit=2000&offset=0",
         auth: {
             bearer: self.settings.token
         },
@@ -107,32 +119,34 @@ SierraAPI.prototype.request = function _request (options, callback) {
         json: options.params.jsonQuery
     };
 
-    if (requestOptions.method === 'GET') {
-        requestOptions.qs = options.params;
-    } else {
-       
-    }
+   
 
 
     request(requestOptions, function (error, response, body) {
         if (error) {
             return callback(error, null);
         }
+      
+        if (response == null){
+            logger.error(response);
+            error = "Query Patrons Response is empty";
+            return callback(error, null);
+        }
 
         var result;
         
 
-        logger.info("Response for -------------"+requestOptions.url)
+        logger.info("Response for Query Patrons -------------"+requestOptions.url)
         logger.info(response)
         logger.info("-------------")
        
        if(typeof response.body == "object"){
-
            result = response.body;
        }
        else{
             try {
                 result = JSON.parse(response.body);
+               
             } catch (e) {
                 console.log(e)
                 result = {};
@@ -143,9 +157,11 @@ SierraAPI.prototype.request = function _request (options, callback) {
         if (response.statusCode !== 200) {
                
             if (result['httpStatus']) {
+                logger.error(result['httpStatus']);
                 return callback(result, null);
             }
-           
+
+            logger.error('Request failed with: ' + response);
             return callback('Request failed with: ' + response.statusCode, null);
         }
 
@@ -160,15 +176,20 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
         return callback('No token defined! Call authenticate() first.', null);
     }
 
-    var arraySample =[];
+    var arrayPatrons =[];
 
+    
 
     var total =  options.params.listOfPatrons.entries.length;
     var count = 0;
 
 
-    var q = async.queue(function(task, callback) {
-        console.log(task.link.link);
+  
+
+    if(total > 0){
+
+        var q = async.queue(function(task, callback) {
+       
         var requestOptions = {
                 url: task.link.link + "?" + options.params.fields,//item.link+"?"+ options.params.fields,
                 auth: {
@@ -178,102 +199,64 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 method: 'GET'     
         };
         request(requestOptions, function (error, response, body) {
-            console.log(requestOptions);
-            var result = JSON.parse(response.body);
-            logger.info("Response for ------------- "+requestOptions.url);
-            logger.info(body)
-            logger.info("-------------")
-            count += 1;
-            arraySample.push(result);
-            callback(null,arraySample)
-        })
-    },options.params.listOfPatrons.entries.length);
-    q.drain = function() {
-        console.log("Drain");
-        cb(null,arraySample);
-    };
-     for(var i = 0; i < options.params.listOfPatrons.entries.length - 1 ; i++){
-       
-         q.push({link:options.params.listOfPatrons.entries[i]});
-     
-     }
-     /*setTimeout(function(){
-        async.forEach(options.params.listOfPatrons.entries, function(item, callback){
-                var requestOptions = {
-                        url: item.link +"?"+ options.params.fields,//item.link+"?"+ options.params.fields,
-                        auth: {
-                            bearer: self.settings.token
-                        },
-                        headers:{'Cache-Control':'no-cache, no-store, max-age=0'},
-                        method: 'GET'     
-                };
-                request(requestOptions, function (error, response, body) {
-                    var result = JSON.parse(response.body);
 
-        
-                    logger.info("Response for ------------- "+requestOptions.url);
-                    logger.info(body)
-                    logger.info("-------------")
+            
+                if (error) {
+                    return callback(error, null);
+                }
 
-                    count += 1;
-                    arraySample.push(result);
-                    if(count == total){
-                        cb(null,arraySample)    
-                    }
-                
-                })
-                
-             });
-             console.log("Time out")
-        }, 1000);
-    
-       */
-         
-}
-    /*for (var i = 0; i <= parseInt(total); i++){
-   
-        var requestOptions = {
-            url: options.params.listOfPatrons.entries[i].link+"?"+ options.params.fields,
-            auth: {
-                bearer: self.settings.token
-            },
-            method: 'GET'     
-        };
-    
-        console.log("Link - " + options.params.listOfPatrons.entries[i].link+"?"+ options.params.fields)
-    }
-        /*request(requestOptions, function (error, response, body) {
-            if (error) {
-                return callback(error, null);
-            }
+                if (response == null){
+                    error = "Patrons Response is empty";
+                    return callback(response, null);
+                }
 
-            var result;
-        
-     
-        if(typeof response.body == "object"){
-
-            result = response.body;
-        }
-        else{
                 try {
                     result = JSON.parse(response.body);
-                  
                 } catch (e) {
                     console.log(e)
+                    logger.error(e);
                     result = {};
                 }
-            
-        }
-        
-            if (response.statusCode !== 200) {
-                
-                if (result['httpStatus']) {
-                    return callback(result, null);
+
+                if (response.statusCode !== 200) {
+
+                     if (result['httpStatus']) {
+                        logger.error(result);
+                        logger.error(requestOptions.url);
+                        return callback(result, null);
+                    }
+
+                    logger.error('Request failed with: ' + response);
+                    return callback('Request failed with: ' + response.statusCode, null);
+                    
                 }
-                console.log(response)
-                return callback('Request failed with: ' + response.statusCode, null);
-            }
-            */
-      
+            
+                logger.info("Response for ------------- " + requestOptions.url);
+                logger.info(body)
+                logger.info("-------------")
+                count += 1;
+
+                 arrayPatrons.push(result);
+
+                 callback(null,arrayPatrons)
+            })
+
+         },total);
+
+
+        q.drain = function() {
+
+            logger.info("Finished Querying all the Patrons");
+            cb(null,arrayPatrons);
+
+        };
+
+        for(var i = 0; i < total - 1 ; i++){
+        
+            q.push({link:options.params.listOfPatrons.entries[i]});
+        
+        } 
+    }
+}   
 
 module.exports = new SierraAPI();

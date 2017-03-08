@@ -11,7 +11,6 @@ function fetch(options, callback) {
 
 
 function queryPatrons(options, callback) {
-
     api.request({
         method: 'POST',
         resource: 'patrons/query',
@@ -21,20 +20,12 @@ function queryPatrons(options, callback) {
 
 
 function fetchPatronByID(options, callback) {
-
-
     api.requestPatron({
         method: 'GET',  
         params: options
     }, function(err,result){
         callback(null,result)
     }); 
-
-    /*api.requestPatron({
-        method: 'GET',
-        resource: options.patronLink + "?" + options.fields,
-        params: options
-    }, callback);*/
 }
 
 function fetchByBarcode(options, callback) {
