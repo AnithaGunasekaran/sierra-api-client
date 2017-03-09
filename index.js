@@ -17,13 +17,13 @@ var logger = new (winston.Logger)({
     new (winston.transports.File)({
       name: 'info-file',
       filename: './logs/sierra-api-info-' + currentDate +".log",
-      timestamp: true,
+      timestamp: function() { return (new Date() + new Date().getTimezoneOffset()); },
       level: 'info'
     }),
     new (winston.transports.File)({
       name: 'error-file',
       filename: './logs/sierra-api-error-' + currentDate + ".log",
-      timestamp: true,
+      timestamp: function() { return (new Date() + new Date().getTimezoneOffset()); },
       level: 'error'
     })
   ]
@@ -110,6 +110,7 @@ SierraAPI.prototype.request = function _request (options, callback) {
     }
  
     var requestOptions = {
+        
         url: self._buildURL(options.resource) + "?limit=2000&offset=0",
         auth: {
             bearer: self.settings.token
@@ -161,7 +162,8 @@ SierraAPI.prototype.request = function _request (options, callback) {
                 return callback(result, null);
             }
 
-            logger.error('Request failed with: ' + response);
+            logger.error('Request failed with:');
+            logger.error(repsonse)
             return callback('Request failed with: ' + response.statusCode, null);
         }
 
@@ -178,28 +180,33 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
 
     var arrayPatrons =[];
 
-    
+ 
+
 
     var total =  options.params.listOfPatrons.entries.length;
     var count = 0;
 
+    var failedPatrons = [];
+
+   
 
   
+ 
+ 
 
     if(total > 0){
 
         var q = async.queue(function(task, callback) {
        
-        var requestOptions = {
+          var requestOptions = {
                 url: task.link.link + "?" + options.params.fields,//item.link+"?"+ options.params.fields,
                 auth: {
                     bearer: self.settings.token
                 },
                 headers:{'Cache-Control':'no-cache, no-store, max-age=0'},
                 method: 'GET'     
-        };
+         };
         request(requestOptions, function (error, response, body) {
-
             
                 if (error) {
                     return callback(error, null);
@@ -213,7 +220,8 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 try {
                     result = JSON.parse(response.body);
                 } catch (e) {
-                    console.log(e)
+                    console.log(e);
+                    failedPatrons.push(requestOptions.url);
                     logger.error(e);
                     result = {};
                 }
@@ -223,39 +231,49 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                      if (result['httpStatus']) {
                         logger.error(result);
                         logger.error(requestOptions.url);
+                        failedPatrons.push(requestOptions.url);
                         return callback(result, null);
                     }
 
-                    logger.error('Request failed with: ' + response);
-                    return callback('Request failed with: ' + response.statusCode, null);
+                   logger.error('Request failed with:');
+                   failedPatrons.push(requestOptions.url);
+                   logger.error(requestOptions.url);
+                   logger.error(response);
+                   return callback('Request failed with: ' + response.statusCode, null);
                     
                 }
-            
+
                 logger.info("Response for ------------- " + requestOptions.url);
                 logger.info(body)
                 logger.info("-------------")
                 count += 1;
+                
+                
+                console.log(count)
+                console.log(requestOptions.url)
 
-                 arrayPatrons.push(result);
-
-                 callback(null,arrayPatrons)
+                arrayPatrons.push(result);
+               
+               
+                  callback(null,arrayPatrons);
             })
-
-         },total);
-
+          
+         },500);
 
         q.drain = function() {
-
+            console.log("List of Failed Patrons");
+           console.log(failedPatrons);
             logger.info("Finished Querying all the Patrons");
             cb(null,arrayPatrons);
-
         };
-
-        for(var i = 0; i < total - 1 ; i++){
-        
-            q.push({link:options.params.listOfPatrons.entries[i]});
-        
+       
+       
+        for(var i = 0; i < total ; i++){
+            var link = options.params.listOfPatrons.entries[i];
+            q.push({link: link});   
         } 
+
+       
     }
 }   
 
