@@ -23,8 +23,8 @@ function fetchPatronByID(options, callback) {
     api.requestPatron({
         method: 'GET',  
         params: options
-    }, function(err,result){
-        callback(null,result)
+    }, function(err,result, failedPatrons){
+        callback(null,result,failedPatrons)
     }); 
 }
 

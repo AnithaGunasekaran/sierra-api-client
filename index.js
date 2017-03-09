@@ -111,7 +111,7 @@ SierraAPI.prototype.request = function _request (options, callback) {
  
     var requestOptions = {
         
-        url: self._buildURL(options.resource) + "?limit=2000&offset=0",
+        url: self._buildURL(options.resource) + "?limit=5000&offset=0",
         auth: {
             bearer: self.settings.token
         },
@@ -180,7 +180,7 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
 
     var arrayPatrons =[];
 
- 
+  
 
 
     var total =  options.params.listOfPatrons.entries.length;
@@ -190,14 +190,15 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
 
    
 
-  
  
+   
+
  
 
     if(total > 0){
 
         var q = async.queue(function(task, callback) {
-       
+          
           var requestOptions = {
                 url: task.link.link + "?" + options.params.fields,//item.link+"?"+ options.params.fields,
                 auth: {
@@ -207,13 +208,14 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 method: 'GET'     
          };
         request(requestOptions, function (error, response, body) {
-            
+                
                 if (error) {
                     return callback(error, null);
                 }
 
                 if (response == null){
                     error = "Patrons Response is empty";
+                    failedPatrons.push(requestOptions.url);
                     return callback(response, null);
                 }
 
@@ -255,21 +257,22 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 arrayPatrons.push(result);
                
                
-                  callback(null,arrayPatrons);
+                callback(null,arrayPatrons,failedPatrons);
             })
           
          },500);
 
         q.drain = function() {
             console.log("List of Failed Patrons");
-           console.log(failedPatrons);
+            console.log(failedPatrons);
             logger.info("Finished Querying all the Patrons");
-            cb(null,arrayPatrons);
+            cb(null,arrayPatrons,failedPatrons);
         };
        
-       
+       console.log(options.params.listOfPatrons.entries)
         for(var i = 0; i < total ; i++){
             var link = options.params.listOfPatrons.entries[i];
+            console.log(link);
             q.push({link: link});   
         } 
 
