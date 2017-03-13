@@ -97,6 +97,7 @@ SierraAPI.prototype.authenticate = function authenticate (key, secret, callback)
         }
 
         logger.error('Request failed with: ' + response);
+        console.log(response)
         return callback('Request failed with: ' + response.statusCode, null);
     });
 };
@@ -111,7 +112,7 @@ SierraAPI.prototype.request = function _request (options, callback) {
  
     var requestOptions = {
         
-        url: self._buildURL(options.resource) + "?limit=5000&offset=0",
+        url: self._buildURL(options.resource) + "?limit=10000&offset=0",
         auth: {
             bearer: self.settings.token
         },
@@ -136,6 +137,7 @@ SierraAPI.prototype.request = function _request (options, callback) {
 
         var result;
         
+
 
         logger.info("Response for Query Patrons -------------"+requestOptions.url)
         logger.info(response)
@@ -171,6 +173,22 @@ SierraAPI.prototype.request = function _request (options, callback) {
     });
 };
 
+// comparer : function(currentElement)
+Array.prototype.inArray = function(comparer) { 
+    for(var i=0; i < this.length; i++) { 
+        if(comparer(this[i])) return true; 
+    }
+    return false; 
+}; 
+
+// adds an element to the array if it does not already exist using a comparer 
+// function
+Array.prototype.pushIfNotExist = function(element, comparer) { 
+    if (!this.inArray(comparer)) {
+        this.push(element);
+    }
+};
+
 SierraAPI.prototype.requestPatron = function _request (options, cb) {
     var self = this;
 
@@ -180,25 +198,20 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
 
     var arrayPatrons =[];
 
+   
   
-
 
     var total =  options.params.listOfPatrons.entries.length;
     var count = 0;
 
     var failedPatrons = [];
 
-   
-
- 
-   
-
- 
+    
 
     if(total > 0){
 
         var q = async.queue(function(task, callback) {
-          
+       
           var requestOptions = {
                 url: task.link.link + "?" + options.params.fields,//item.link+"?"+ options.params.fields,
                 auth: {
@@ -212,18 +225,24 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 if (error) {
                     return callback(error, null);
                 }
-
+               
                 if (response == null){
                     error = "Patrons Response is empty";
-                    failedPatrons.push(requestOptions.url);
+                
+                    failedPatrons.pushIfNotExist({link:requestOptions.url.split("?")[0]}, function(e) { 
+                         return e.link === failedPatrons.link; 
+                    });
+                    
                     return callback(response, null);
                 }
 
                 try {
                     result = JSON.parse(response.body);
                 } catch (e) {
-                    console.log(e);
-                    failedPatrons.push(requestOptions.url);
+                    //failedPatrons.push({link:requestOptions.url.split("?")[0]});
+                    failedPatrons.pushIfNotExist({link:requestOptions.url.split("?")[0]}, function(e) { 
+                         return e.link === failedPatrons.link; 
+                    });
                     logger.error(e);
                     result = {};
                 }
@@ -233,12 +252,19 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                      if (result['httpStatus']) {
                         logger.error(result);
                         logger.error(requestOptions.url);
-                        failedPatrons.push(requestOptions.url);
+               
+                        failedPatrons.pushIfNotExist({link:requestOptions.url.split("?")[0]}, function(e) { 
+                         return e.link === failedPatrons.link; 
+                         });
                         return callback(result, null);
                     }
 
+                   
                    logger.error('Request failed with:');
-                   failedPatrons.push(requestOptions.url);
+                 
+                    failedPatrons.pushIfNotExist({link:requestOptions.url.split("?")[0]}, function(e) { 
+                         return e.link === failedPatrons.link; 
+                    });
                    logger.error(requestOptions.url);
                    logger.error(response);
                    return callback('Request failed with: ' + response.statusCode, null);
@@ -249,6 +275,7 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 logger.info(body)
                 logger.info("-------------")
                 count += 1;
+                
                 
                 
                 console.log(count)
@@ -263,16 +290,16 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
          },500);
 
         q.drain = function() {
-            console.log("List of Failed Patrons");
-            console.log(failedPatrons);
+            //console.log("List of Failed Patrons");
+           // console.log(failedPatrons);
             logger.info("Finished Querying all the Patrons");
             cb(null,arrayPatrons,failedPatrons);
         };
        
-       console.log(options.params.listOfPatrons.entries)
+     
         for(var i = 0; i < total ; i++){
             var link = options.params.listOfPatrons.entries[i];
-            console.log(link);
+         
             q.push({link: link});   
         } 
 
