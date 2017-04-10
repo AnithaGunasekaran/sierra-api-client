@@ -97,7 +97,7 @@ SierraAPI.prototype.authenticate = function authenticate (key, secret, callback)
         }
 
         logger.error('Request failed with: ' + response);
-        console.log(response)
+      
         return callback('Request failed with: ' + response.statusCode, null);
     });
 };
@@ -277,9 +277,7 @@ SierraAPI.prototype.requestPatron = function _request (options, cb) {
                 count += 1;
                 
                 
-                
-                console.log(count)
-                console.log(requestOptions.url)
+  
 
                 arrayPatrons.push(result);
                
